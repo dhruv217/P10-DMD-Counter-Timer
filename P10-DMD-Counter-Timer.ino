@@ -22,7 +22,8 @@ int Mode = COUNTER;
 int buttonStartStop = 14;
 int buttonSetMode = 15;
 int buttonTimeUp = 16;
-int time[4], i;
+int buttonReset = 17;
+int savedTime[4], time[4], i;
 
 
 DMD dmd(DISPLAYS_ACROSS, DISPLAYS_DOWN);
@@ -35,6 +36,7 @@ void ScanDMD() {
 
 void DecrementTime() {
 	if((counting) && ((time[0] != 0) || (time[1] != 0) || (time[2] != 0) || (time[3] != 0))) {
+		counting = true;
 		if(time[3] == 0) {
 			time[3] = 9;
 			if(time[2] == 0) {
@@ -51,6 +53,8 @@ void DecrementTime() {
 		} else {
 			time[3] -= 1;
 		}
+	} if ((time[0] == 0) && (time[1] == 0) && (time[2] == 0) && (time[3] == 0)) {
+		counting = false;
 	}
 }
 
@@ -58,6 +62,8 @@ void setup(){
 	pinMode(buttonStartStop, INPUT_PULLUP);
     pinMode(buttonSetMode, INPUT_PULLUP);
     pinMode(buttonTimeUp, INPUT_PULLUP);
+	pinMode(buttonReset, INPUT_PULLUP);
+	
 
 	Serial.begin(9600);
 	Timer1.initialize( 5000 );
@@ -70,6 +76,19 @@ void setup(){
 	time[1] = 0;
 	time[2] = 0;
 	time[3] = 0;
+
+	dmd.drawMarquee("Archana InfoTech 2018",21,(32*DISPLAYS_ACROSS)-1,1);
+	long start=millis();
+	long timer=start;
+	boolean ret=false;
+	while(!ret)
+	{
+		if ((timer+30) < millis()) 
+		{
+		ret=dmd.stepMarquee(-1,0);
+		timer=millis();
+		}
+	}  
 	
 }
 
@@ -79,6 +98,10 @@ void loop() {
 		Serial.println("Mode Changed To "+ Mode);
 		if(Mode == SET_TIME_SS){
 			Mode = COUNTER;
+			savedTime[0] = time[0];
+			savedTime[1] = time[1];
+			savedTime[2] = time[2];
+			savedTime[3] = time[3];
 		} else {
 			Mode += 1;
 		}
@@ -88,6 +111,15 @@ void loop() {
 		counting = !counting;
 		if(counting)Serial.println("Start");
 		else Serial.println("Stop"); 
+		delay(500);
+	}
+	if (digitalRead(buttonReset) == LOW && Mode == COUNTER) {
+		if(!counting) {
+			time[0] = savedTime[0];
+			time[1] = savedTime[1];
+			time[2] = savedTime[2];
+			time[3] = savedTime[3];
+		}
 		delay(500);
 	}
     switch (Mode) {
@@ -162,7 +194,6 @@ void printTimeToLED() {
 
 void printTimeToLEDMM()
 {
-	
 	str = String(time[0]) + String(time[1])+" ";
 	str.toCharArray(b, 4);
 	dmd.drawString(5, 1, "mm: ", 4, GRAPHICS_NORMAL);
