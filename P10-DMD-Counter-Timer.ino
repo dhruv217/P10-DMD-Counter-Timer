@@ -8,7 +8,7 @@
 #include "Arial_black_16.h"
 
 
-#define DISPLAYS_ACROSS 1
+#define DISPLAYS_ACROSS 2
 #define DISPLAYS_DOWN 1
 
 #define COUNTER 0
@@ -75,17 +75,20 @@ void setup(){
 
 void loop() {
 	if (digitalRead(buttonSetMode) == LOW) {
+		dmd.clearScreen(true);
 		Serial.println("Mode Changed To "+ Mode);
 		if(Mode == SET_TIME_SS){
 			Mode = COUNTER;
 		} else {
 			Mode += 1;
 		}
+		delay(500);
     }
 	if (digitalRead(buttonStartStop) == LOW && Mode == COUNTER) {
 		counting = !counting;
 		if(counting)Serial.println("Start");
 		else Serial.println("Stop"); 
+		delay(500);
 	}
     switch (Mode) {
 		case COUNTER: 
@@ -100,13 +103,8 @@ void loop() {
 			DisplaySetTimeSS();
 			break;
 	}
-	if (Mode != COUNTER)
-	{
-		i += 1;
-		if (i == 59999)
-			i = 0;
-	}
-	delay(333);
+	delay(100);
+
 }
 
 void Timer() {
@@ -127,6 +125,7 @@ void DisplaySetTimeMM()
         else {
             time[1] += 1;
         }
+		delay(200);
     }
     printTimeToLEDMM();
 }
@@ -149,40 +148,31 @@ void DisplaySetTimeSS()
 		{
 			time[3] += 1;
 		}
+		delay(200);
 	}
 	printTimeToLEDSS();
 }
 
 void printTimeToLED() {
-	str = String(time[0])+String(time[1])+":"+String(time[2])+String(time[3]);
-	str.toCharArray(b,6);
-	dmd.drawString( 0, 1, b, 5, GRAPHICS_NORMAL );
+	str = String(time[0])+String(time[1])+":"+String(time[2])+String(time[3])+" ";
+	str.toCharArray(b,7);
+	dmd.drawString( 2, 1, "T-", 2, GRAPHICS_NORMAL );
+	dmd.drawString( 23, 1, b, 6, GRAPHICS_NORMAL );
 }
 
 void printTimeToLEDMM()
 {
-	if(i % 2 == 0) {
-	str = String(time[0]) + String(time[1]) + ":" + String(time[2]) + String(time[3]);
-	str.toCharArray(b, 6);
-	dmd.drawString(0, 1, b, 5, GRAPHICS_NORMAL);
-	} else {
-		str = "  :" + String(time[2]) + String(time[3]);
-		str.toCharArray(b, 6);
-		dmd.drawString(0, 1, b, 5, GRAPHICS_NORMAL);
-	}
+	
+	str = String(time[0]) + String(time[1])+" ";
+	str.toCharArray(b, 4);
+	dmd.drawString(5, 1, "mm: ", 4, GRAPHICS_NORMAL);
+	dmd.drawString(41, 1, b, 3, GRAPHICS_NORMAL);
+	
 }
 void printTimeToLEDSS()
 {
-	if (i % 2 == 0)
-	{
-		str = String(time[0]) + String(time[1]) + ":" + String(time[2]) + String(time[3]);
-		str.toCharArray(b, 6);
-		dmd.drawString(0, 1, b, 5, GRAPHICS_NORMAL);
-	}
-	else
-	{
-		str = String(time[0]) + String(time[1]) + ":  ";
-		str.toCharArray(b, 6);
-		dmd.drawString(0, 1, b, 5, GRAPHICS_NORMAL);
-	}
-}
+	str = String(time[2]) + String(time[3])+" ";
+	str.toCharArray(b, 4);
+	dmd.drawString(5, 1, "ss: ", 4, GRAPHICS_NORMAL);
+	dmd.drawString(41, 1, b, 3, GRAPHICS_NORMAL);
+} 
