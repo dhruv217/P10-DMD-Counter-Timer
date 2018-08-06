@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
-    "port": "COM40",
-    "sketch": "Final_TwoChipDisplay.ino"
+    "port": "COM3",
+    "sketch": "P10-DMD-Counter-Timer.ino"
 }
